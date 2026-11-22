@@ -1,0 +1,41 @@
+{
+  "pipeline_version": "week3-v1",
+  "generated_at_utc": "2026-11-22T13:58:20.286776+00:00",
+  "data_type": "documents_mis",
+  "configuration": {
+    "chunk_size": 500,
+    "method": "paragraph-aware"
+  },
+  "processing_method": "paragraph-aware text chunks of 500 characters",
+  "sources": [
+    {
+      "path": "/content/week3_project/data/raw/mis.pdf",
+      "sha256": "529b996865ba18d6e8f9fa1fc389fefd84171861870efa24908eecdd1bc8980d"
+    }
+  ],
+  "outputs": [
+    "/content/week3_project/data/pipeline_v1/documents_mis/prepared_text.jsonl"
+  ],
+  "source_output_mapping": [
+    {
+      "source": "/content/week3_project/data/raw/mis.pdf",
+      "output": "/content/week3_project/data/pipeline_v1/documents_mis/prepared_text.jsonl"
+    }
+  ],
+  "inspection": {
+    "source": "mis.pdf",
+    "pages": 7,
+    "characters": 9012
+  },
+  "validation": {
+    "output_count": 1,
+    "output_sha256": [
+      "ef7a426ff3e41bfc3dd6fb6d395a6a8bc36bfe068c39a46ec35a3e6493bcce3e"
+    ],
+    "output_bytes": [
+      10854
+    ]
+  },
+  "source_version": "Not verified",
+  "access_rights": "Not verified"
+}
