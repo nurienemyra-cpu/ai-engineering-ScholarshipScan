@@ -1,112 +1,166 @@
 # Individual Data Quality Audit Report
 
-## A. Project Context
+## 1. Project Context
 
-**Project Title:** ScholarshipScan – AI-Based Scholarship Information Extraction and Comparison System
+**Project Name:** ScholarshipScan – AI-Based Scholarship Information Extraction and Comparison System
 
-**Project Purpose:**
+ScholarshipScan aims to help students retrieve, understand, and compare scholarship information from official documents. The system extracts important information such as citizenship requirements, age limits, minimum academic results, application deadlines, and required documents.
 
-ScholarshipScan is an AI application designed to help students retrieve, understand, and compare scholarship information from official scholarship documents. It extracts important criteria and provides supporting source references so that users can verify the information against the original documents.
+This data quality audit evaluates the scholarship PDF documents collected for the Week 3 data engineering pipeline. The audit focuses on whether the extracted data is suitable for further processing and retrieval.
 
-**Application Requirements:**
+Two relevant functional requirements are:
 
-1. **FR2 – Scholarship Information Extraction:** Extract citizenship requirements, age limits, minimum academic results, application deadlines, and required documents.
-2. **FR3 – Source Reference and Evidence:** Provide a source reference and supporting passage for every extracted field.
+- **FR2:** Extract important scholarship information, including citizenship, age limits, minimum academic results, deadlines, and required documents.
+- **FR3:** Provide source references and supporting passages for extracted information.
 
-**Data Sources and Types:**
+## 2. Dataset Overview
 
-The current dataset consists of three publicly accessible scholarship PDF documents:
+Three scholarship-related PDF documents were used in the pipeline.
 
 | Document | Pages | Extracted Characters |
 |---|---:|---:|
-| MIS 2026 Guidelines | 7 | 9,006 |
-| MTCP Scholarship 2026 Guidelines | 4 | 7,459 |
-| MyBrainSc Scholarship FAQ 2026 | 10 | 10,559 |
+| MIS 2026 Guidelines (`mis.pdf`) | 7 | 9,006 |
+| MTCP 2026 Guidelines (`mtcp.pdf`) | 4 | 7,459 |
+| MyBrainSc 2026 FAQ (`mybrain.pdf`) | 10 | 10,559 |
 | **Total** | **21** | **27,024** |
 
-The data consists of unstructured textual information extracted from PDF documents using PyPDF. The text is cleaned, divided into paragraph-aware chunks with a maximum configured size of 500 characters, and stored in JSONL format.
+The documents were processed using PDF text extraction and whitespace cleaning. The extracted content was divided into chunks using fixed-size and paragraph-aware chunking methods.
 
-**Sample Inspected:**
+## 3. Data Quality Assessment
 
-All three available PDF documents were included in the initial document-level inspection. A further detailed inspection of 10–20 extracted text chunks is required to evaluate field-level extraction quality.
+### 3.1 Completeness
 
-## B. Data Quality Assessment
+All three PDF documents produced extractable text, with a total of 27,024 extracted characters. This indicates that the documents contain machine-readable text that can be processed by the pipeline.
 
-| Dimension | Finding and Evidence | Impact |
+However, successful text extraction does not guarantee that all required scholarship fields are available. Field-level completeness for citizenship, age limits, academic requirements, deadlines, and required documents has not yet been fully evaluated.
+
+**Assessment:** Partially satisfactory. The documents are extractable, but completeness of individual scholarship fields requires further verification.
+
+### 3.2 Consistency
+
+The documents were processed using the same extraction and preparation workflow. Source filenames, page references, and chunk identifiers were retained to support traceability.
+
+Two chunking approaches were compared:
+
+| Measurement | Fixed-size | Paragraph-aware |
+|---|---:|---:|
+| Total chunks | 63 | 84 |
+| Average chunk length | 421.84 | 312.67 |
+| Shortest chunk | 60 | 1 |
+| Longest chunk | 500 | 500 |
+| Chunks above 500 characters | 0 | 0 |
+| Empty chunks | 0 | 0 |
+| Exact duplicate occurrences | 0 | 2 |
+
+Paragraph-aware chunking produced 21 more chunks and a lower average chunk length. It may preserve paragraph context better, but the short chunks and repeated headings require attention.
+
+**Assessment:** Satisfactory for basic structural consistency, with minor issues identified in paragraph-aware chunking.
+
+### 3.3 Accuracy
+
+A targeted manual verification was performed by comparing suspicious extracted chunks against the original PDF pages.
+
+The inspection confirmed:
+
+- Five short chunks from the MIS document (`1`, `3`, `4`, `5`, and `6`) were page numbers rather than meaningful scholarship content.
+- The MyBrainSc heading, `SOALAN LAZIM BIASISWA MYBRAINSC TAHUN 2026`, appeared repeatedly on pages 2, 3, and 4.
+
+These findings indicate that the extraction process captured some page numbers and repeated headings as separate chunks.
+
+However, this verification only covered the eight identified suspicious records. The accuracy of all extracted scholarship information, including eligibility criteria and deadlines, has not yet been fully checked against the original PDFs.
+
+**Assessment:** Partially satisfactory. Targeted verification was completed, but broader content accuracy checks are still required.
+
+### 3.4 Timeliness
+
+All three documents relate to scholarship information for the 2026 academic year. Their information is relevant to the intended project dataset.
+
+However, the current validity of the information and whether newer versions have been published have not yet been independently confirmed.
+
+**Assessment:** Partially satisfactory. The documents are labelled for the 2026 intake, but their latest-version status needs verification.
+
+### 3.5 Uniqueness
+
+The chunking comparison identified different duplicate patterns:
+
+- Fixed-size chunking contained zero exact duplicate chunks.
+- Paragraph-aware chunking contained one exact duplicate group with three occurrences of the same MyBrainSc heading. This represents two additional duplicate occurrences.
+- Five short MIS chunks were identified as page numbers.
+
+The repeated heading is likely caused by the document layout rather than duplicated scholarship information.
+
+These records should be considered when preparing the retrieval-ready dataset. However, the original extracted records should be retained to preserve data provenance.
+
+**Assessment:** Minor duplication and irrelevant chunks were identified. They can be addressed during retrieval data preparation.
+
+## 4. Data Validation Rules
+
+Two validation rules were applied to `prepared_text.jsonl`.
+
+| Validation Rule | Description | Result |
 |---|---|---|
-| Completeness | All three PDFs produced extractable text. However, the presence of extracted text does not confirm that all required scholarship fields are available or correctly extracted. | Missing criteria may produce incomplete scholarship comparisons. |
-| Consistency | The documents describe different scholarship programmes and formats. Cross-document consistency cannot be fully established without comparing equivalent fields. | Differences in date and eligibility representations may affect comparisons. |
-| Accuracy | Text extraction was successful, but extracted passages have not yet been fully compared with their original PDF pages. | Extraction errors may produce incorrect scholarship information. |
-| Timeliness | All selected documents relate to the 2026 scholarship cycle. Their current validity and application deadlines still require verification with the providers. | Outdated information may mislead students. |
-| Uniqueness | Three different scholarship documents were selected. Exact duplicate chunks have not yet been systematically checked. | Duplicate content may affect retrieval quality. |
+| Rule 1: Source Reference and Non-empty Text | Every record must contain a source reference and non-empty text. | PASS |
+| Rule 2: Maximum Chunk Length | Every chunk must contain no more than 500 characters. | PASS |
 
-## C. Two Validation Rules
+**Validation results:**
 
-**Rule 1: Source Reference and Non-empty Text**
+- Total records checked: 84
+- Rule 1 failed records: 0
+- Rule 2 failed records: 0
+- Both validation rules passed.
 
-- **Problem detected:** Missing source information or empty extracted text.
-- **Condition:** Every chunk must contain a source filename and non-empty text.
-- **Validation result:** Pending execution of the Python validation script.
-- **Action if failed:** Reprocess the affected PDF and verify its source metadata. Do not automatically delete the record.
+These results demonstrate that all 84 records passed the two basic structural validation checks. However, these checks do not establish the semantic accuracy or completeness of the extracted scholarship information.
 
-**Rule 2: Maximum Chunk Length**
+## 5. Data Coverage and Potential Bias
 
-- **Problem detected:** Chunks exceeding the configured processing limit.
-- **Condition:** Every chunk must contain no more than 500 characters.
-- **Validation result:** Pending execution of the Python validation script.
-- **Action if failed:** Reprocess the affected text using the paragraph-aware chunking method and validate it again.
+The dataset covers three scholarship programmes: MIS, MTCP, and MyBrainSc. The documents contain scholarship-related information such as eligibility requirements, application guidelines, and frequently asked questions.
 
-A failed validation should require human review because the affected data may contain important scholarship information. For example, an empty extracted page may be caused by a scanned PDF rather than irrelevant content. Reprocessing or OCR may recover the information without losing valuable data.
+However, the dataset is limited to three programmes and does not represent all scholarships available to students.
 
-## D. Coverage and Potential Bias
+Potential limitations and biases include:
 
-**Coverage Findings:**
+- **Programme coverage bias:** The dataset contains only three selected scholarship programmes.
+- **Document format bias:** The extraction process may perform differently depending on PDF layouts, tables, and formatting.
+- **Information availability bias:** Some scholarship criteria may not be explicitly stated in the collected documents.
+- **Temporal bias:** Scholarship requirements may change between intake years.
 
-Two important categories for ScholarshipScan are:
+Therefore, the system should avoid making assumptions when information is missing and should return "not stated" when a required field cannot be supported by the source document.
 
-1. **Eligibility Requirements:** Citizenship, age limits, and minimum academic results.
-2. **Application Information:** Application deadlines and required supporting documents.
+## 6. Responsible Data Practices
 
-The three selected documents provide an initial basis for examining these categories. However, the dataset covers only three scholarship programmes and cannot yet represent all scholarship providers, study levels, or application situations.
+The following practices are important for ScholarshipScan:
 
-**Potential Bias and Its Effect:**
+1. **Data provenance:** Retain source filenames, page references, source URLs, and download dates to support traceability.
+2. **Source verification:** Ensure that extracted information can be checked against the original scholarship documents.
+3. **Copyright and usage permissions:** Public accessibility does not automatically mean that documents can be freely redistributed. Their copyright notices and usage terms must be reviewed.
+4. **Privacy protection:** Avoid storing unnecessary personal information. The system should not retain applicants' personal identifiers beyond the intended session.
+5. **Transparency:** Inform users that extracted scholarship information should be verified against the original sponsor documents.
+6. **Missing information handling:** Return "not stated" rather than generating unsupported scholarship requirements.
 
-A potential risk is selection bias because the dataset contains only three selected scholarship programmes. This may limit the system's ability to compare scholarships outside the selected collection.
+## 7. Engineering Decision
 
-Pipeline-induced bias is also possible because PDF extraction may handle ordinary paragraphs more effectively than complex tables, multi-column layouts, or scanned pages.
+**Decision: GO WITH CONDITIONS**
 
-These issues could cause ScholarshipScan to produce more complete results for clearly structured documents than for documents containing complex layouts. Further investigation should include additional scholarship sources and manual comparisons between extracted chunks and original PDF pages.
+The dataset is suitable for continuing the development of the ScholarshipScan pipeline because all three documents produced extractable text, and all 84 prepared records passed the two structural validation rules.
 
-## E. Responsible Data Practices
+Targeted manual verification also identified the causes of the suspicious short chunks and repeated headings.
 
-The project uses publicly accessible scholarship documents published by the relevant scholarship providers. Source URLs, filenames, page references, and SHA-256 fingerprints are recorded to maintain traceability and provenance.
+However, the dataset is not yet fully ready for reliable scholarship information retrieval because field-level accuracy, document version validity, and copyright or usage permissions still require further checks.
 
-The documents mainly contain general scholarship information rather than personal student application records. Nevertheless, they should be checked for accidentally included personal information.
+### Priority Improvements
 
-Public accessibility does not automatically grant unrestricted reuse or redistribution rights. Copyright notices, source terms, and applicable permissions must be checked before redistributing the documents.
+**1. Improve retrieval-ready data quality**
 
-Safeguards include preserving original PDFs, recording source information and download dates, maintaining document fingerprints, checking for personal information, and verifying extracted information against the original provider documents.
+Exclude irrelevant page-number chunks and repeated document headings from the retrieval-ready dataset after verification. Preserve the original prepared records to maintain provenance and traceability.
 
-**Data Governance Statement:**
+**2. Perform broader content and source verification**
 
-ScholarshipScan maintains data provenance through source references, page information, download records, and SHA-256 fingerprints. The project minimises personal data collection and requires verification of document usage permissions. Extracted information must remain traceable to its original sources to support responsible and reliable AI development.
+Manually verify important scholarship fields, especially eligibility criteria, academic requirements, deadlines, and required documents. Confirm that the collected PDFs are the appropriate and latest available versions, and review their usage permissions.
 
-## F. Engineering Decision
+## 8. Conclusion
 
-**Selected Decision: GO WITH CONDITIONS**
+The audit shows that the current ScholarshipScan dataset is structurally suitable for further pipeline development. Both validation rules passed for all 84 records, while chunk inspection and targeted manual verification identified page numbers and repeated headings that may affect retrieval quality.
 
-The current dataset is suitable for continuing the next development stage with additional validation and improvements.
+Nevertheless, further content accuracy checks, source verification, and copyright reviews are necessary before the dataset can be considered reliable for the final scholarship information extraction and comparison system.
 
-The initial inspection confirmed that all three scholarship PDFs produced extractable text, with a combined total of 27,024 extracted characters across 21 pages. The documents can therefore support the initial development of the document processing and information extraction components.
-
-However, field-level extraction accuracy has not been fully verified. The current dataset also has limited scholarship coverage, while document validity and reuse permissions require further investigation.
-
-**Two Priority Improvements:**
-
-1. **Strengthen Data Quality Validation:** Compare selected extracted text chunks with their original PDF pages. Verify important fields such as citizenship, academic requirements, deadlines, and required documents. Apply OCR or improve extraction where necessary.
-
-2. **Improve Data Coverage and Provenance:** Include additional scholarship documents from different providers and study levels. Verify publication dates, source URLs, document versions, and usage permissions. Maintain source references and SHA-256 fingerprints for each document.
-
-**Final Justification:**
-
-Proceeding with conditions allows ScholarshipScan development to continue while recognising the limitations of the current dataset. The proposed improvements should be completed before relying on the extracted information for final scholarship comparisons.
+Therefore, the recommended engineering decision is **GO WITH CONDITIONS**.
