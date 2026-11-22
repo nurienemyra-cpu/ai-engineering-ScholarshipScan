@@ -118,3 +118,10 @@ week3_project/
 ### Limitations
 
 The current pipeline focuses on PDF text extraction. Complex tables, multi-column layouts, and scanned documents may require additional processing or OCR. Source version and access rights also require verification.
+
+| Task | Status | Evidence / Required Action |
+|---|---|---|
+| Validation Rule 1 and Rule 2 | Completed – PASS | All 84 records passed both validation rules, with zero failed records. |
+| Duplicate and Short Chunk Inspection | Completed | Identified five page-number chunks and one repeated-heading group containing three occurrences. |
+| Targeted Manual Text Verification | Completed | Verified the five MIS page-number chunks and three repeated MyBrainSc headings against the original PDF pages. |
+| Copyright and Usage Permissions | Pending | Review copyright notices, terms of use, and permissions of source documents. |
