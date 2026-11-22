@@ -4,7 +4,7 @@ AI Engineering, Topic 2
 > **Note on IDs and thresholds:** The requirement IDs (FR, NFR, RAI) and the evaluation thresholds in this document are a working draft based on the Week 1 project scope. Replace them with the IDs and thresholds from your own Part A and Part B if they differ, and keep the diagram labels in sync.
 
 ## Requirements used in this document
-
+ 
 | ID | Requirement |
 |---|---|
 | FR1 | Public scholarship documents (PDF or web pages) can be added, with title, sponsor, URL, intake year and download date recorded. |
