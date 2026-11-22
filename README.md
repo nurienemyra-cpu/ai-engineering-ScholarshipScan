@@ -31,9 +31,9 @@ Scholarship information is scattered across many sponsor websites and PDFs, and 
 Post-SPM, STPM and matriculation students in Malaysia, and their parents or school counsellors, who need to compare scholarships.
  
 ## Data Sources
-- Source 1: MEXT Scholarship 2027 (KOSEN) guidelines, Embassy of Japan in Malaysia — https://www.my.emb-japan.go.jp/files/100990158.pdf
-- Source 2: MEXT Scholarship 2027 (Undergraduate) guidelines, Embassy of Japan in Malaysia — https://www.my.emb-japan.go.jp/files/100990174.pdf
-- Source 3 (to add): official scholarship page from a Malaysian sponsor (e.g. JPA or MARA) — URL: TODO (check terms of use first)
+- Source 1: Applications for the Malaysia International Scholarship (MIS) 2026/2027  — https://biasiswa.mohe.gov.my/INTER/doc/MIS/Guidelines%20MIS%202026.pdf
+- Source 2:  MALAYSIAN TECHNICAL COOPERATION PROGRAMME — https://mtcp.kln.gov.my/storage/scholarship/admin/1777383818_APPLICATION%20GUIDELINES%20FOR%20MTCP%20SCHOLARSHIP%202026.pdf
+- Source 3 (to add):  Biasiswa MyBrainSc Tahun 2026 - https://biasiswa.mohe.gov.my/MyBrainSc/doc/LAMPIRAN%203%20FAQ%202026.pdf
 > Data handling: store the URL, download date and intake year for every document. Where redistribution rights are unclear, keep only URLs and the download script in this repository instead of the document text.
  
 ## Responsible AI Risks
