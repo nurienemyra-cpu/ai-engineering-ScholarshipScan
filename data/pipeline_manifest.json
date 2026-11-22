@@ -1,0 +1,41 @@
+{
+  "pipeline_version": "week3-v1",
+  "generated_at_utc": "2026-11-22T13:58:21.562514+00:00",
+  "data_type": "documents_mybrain",
+  "configuration": {
+    "chunk_size": 500,
+    "method": "paragraph-aware"
+  },
+  "processing_method": "paragraph-aware text chunks of 500 characters",
+  "sources": [
+    {
+      "path": "/content/week3_project/data/raw/mybrain.pdf",
+      "sha256": "e9b3735f184ebbba1cd400306e1f31297d404665906aac110b718ac423159ea7"
+    }
+  ],
+  "outputs": [
+    "/content/week3_project/data/pipeline_v1/documents_mybrain/prepared_text.jsonl"
+  ],
+  "source_output_mapping": [
+    {
+      "source": "/content/week3_project/data/raw/mybrain.pdf",
+      "output": "/content/week3_project/data/pipeline_v1/documents_mybrain/prepared_text.jsonl"
+    }
+  ],
+  "inspection": {
+    "source": "mybrain.pdf",
+    "pages": 10,
+    "characters": 10568
+  },
+  "validation": {
+    "output_count": 1,
+    "output_sha256": [
+      "600b21df783a32d9b5c0dc3ecb66a114ee9597804ede6429697c034673b8955d"
+    ],
+    "output_bytes": [
+      12847
+    ]
+  },
+  "source_version": "Not verified",
+  "access_rights": "Not verified"
+}
