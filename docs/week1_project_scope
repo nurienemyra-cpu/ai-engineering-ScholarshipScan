@@ -1,0 +1,76 @@
+# Week 1: Project Scope
+**Project:** ScholarshipScan: Automatic Extraction and Comparison of Eligibility Criteria from Malaysian Scholarship Documents
+**Course:** AI Engineering, Topic 1 Lab
+ 
+## 1. Purpose
+ScholarshipScan reads public scholarship documents and turns their eligibility criteria, deadlines, values and required documents into a structured, source-linked comparison table for students.
+ 
+## 2. Target Users
+Post-SPM, STPM and matriculation students in Malaysia, and their parents or school counsellors, who need to compare scholarships without reading many long documents.
+ 
+## 3. Why AI Is Needed
+- Criteria are written in free text, in English and Malay, with a different structure for each sponsor.
+- Criteria are often conditional ("and", "or", "except"), and one paragraph can hold several rules.
+- Keyword search or fixed rules will miss many phrasings. An LLM with a fixed output schema can handle the variation, and the result can be measured against a baseline.
+## 4. In Scope
+- Collect 20 to 30 public scholarship documents (PDF or web pages) from at least 2 to 3 sources.
+- Extract these fields into JSON: scholarship name, sponsor, eligibility (citizenship, age, minimum results, field of study), deadline, value or benefits, required documents, source URL, date checked.
+- Support English and Malay text.
+- Show a comparison table with a link to the source for every field.
+- Evaluate against a manually labelled ground truth and a regex baseline.
+## 5. Out of Scope
+- Deciding whether a specific student is eligible or will be accepted.
+- Personal profile matching or ranking of scholarships for a user.
+- Submitting applications or tracking deadlines for users.
+- A general-purpose chatbot.
+- Scholarships that require a login, or documents whose terms of use forbid collection.
+## 6. Inputs and Outputs
+**Input:** a scholarship document (PDF or HTML) converted to text.
+**Output:** a JSON record per scholarship, shown as a comparison table.
+ 
+Example:
+ 
+| Field | Value |
+|---|---|
+| Citizenship | Malaysian |
+| Age limit | (extracted value) |
+| Minimum results | (extracted value) |
+| Deadline | (extracted value) |
+| Source | URL + date checked |
+ 
+## 7. Data Sources
+1. MEXT Scholarship 2027 (KOSEN), Embassy of Japan in Malaysia: https://www.my.emb-japan.go.jp/files/100990158.pdf
+2. MEXT Scholarship 2027 (Undergraduate), Embassy of Japan in Malaysia: https://www.my.emb-japan.go.jp/files/100990174.pdf
+3. Malaysian sponsor pages (e.g. JPA or MARA): URL to be added after checking terms of use.
+Each document is recorded with its URL, download date and intake year. Where redistribution is unclear, only URLs and download scripts are stored in the repository.
+ 
+## 8. Evaluation Plan (preview, details in Topic 2)
+- Ground truth: 30 to 50 scholarships labelled manually (6 to 8 fields each).
+- Metrics: precision, recall and F1 per field; faithfulness rate (extracted value appears in the source text).
+- Baseline: regex and keyword rules; compare against the LLM approach.
+- Error analysis: identify which fields and phrasings fail most often.
+## 9. Success Criteria
+- The LLM approach scores higher than the regex baseline on overall F1.
+- Faithfulness rate is reported, and unsupported values are flagged.
+- Every table cell links back to its source document.
+## 10. Constraints and Assumptions
+- One semester (14 weeks) and a single developer.
+- Only publicly available documents are used.
+- Scholarship details change every year, so each record stores its intake year and date checked.
+## 11. Responsible AI Risks (summary)
+| Risk | Mitigation |
+|---|---|
+| Wrong extraction could make a student miss an opportunity | Source link and date on every field, faithfulness check, "verify with sponsor" notice |
+| Outdated information | Store intake year and download date, flag old documents |
+| Coverage bias (only large or English-language sponsors) | Include Malay documents and report sponsor coverage |
+| Copyright and terms of use | Check each site's terms, store URLs and scripts where unclear |
+ 
+## 12. Semester Plan (draft)
+| Week | Focus |
+|---|---|
+| W1 | System map and project scope |
+| W2 to W3 | Data collection, field schema, first labels |
+| W4 to W6 | Ingestion pipeline and regex baseline |
+| W7 to W10 | LLM extraction and retrieval |
+| W11 to W13 | Evaluation and comparison table interface |
+| W14 | Report and demo |
