@@ -1,7 +1,7 @@
 # ScholarshipScan: Automatic Extraction and Comparison of Eligibility Criteria from Malaysian Scholarship Documents
-AI Engineering — Topic 1 Lab | 15 of 17
+AI Engineering — Topic 1 
  
-> ScholarshipScan extracts eligibility criteria, deadlines, values and required documents from public scholarship documents into a structured, source-linked comparison table, for Malaysian students who are choosing where to apply.
+> ScholarshipScan extracts eligibility criteria, deadlines and required documents from public scholarship documents into a structured, source-linked comparison table, for Malaysian students who are choosing where to apply.
  
 ## Problem Statement
 Scholarship information is scattered across many sponsor websites and PDFs, and each sponsor writes its criteria in a different format and language (English or Malay). Students must read and compare these documents by hand, and may miss deadlines or apply to schemes they do not qualify for. Because the criteria are free text, often conditional ("and", "or", "except"), a keyword search or fixed rules cannot capture them reliably, which is why an AI-based extraction pipeline with measurable evaluation is a suitable engineering solution.
@@ -24,7 +24,7 @@ Scholarship information is scattered across many sponsor websites and PDFs, and 
 **Engineering gap:** in the systems above, eligibility criteria are already structured (entered by administrators or scraped into a few predefined fields). They do not reliably extract criteria from heterogeneous, free-text, bilingual documents, and they do not provide traceable links back to the source sentence.
  
 ## Project Objectives
-- O1: To extract key scholarship fields (eligibility, deadline, value, required documents) from public scholarship documents into a structured JSON schema.
+- O1: To extract five key fields (citizenship, age limit, minimum results, deadline, required documents) from at least 8 scholarship records in 3 public sources into a structured JSON schema.
 - O2: To evaluate the extraction against a manually labelled ground truth (precision, recall and F1 per field) and compare it with a regex baseline.
 - O3: To produce a source-linked comparison table and measure faithfulness, meaning how often extracted values actually appear in the source text.
 ## Target Users
@@ -45,8 +45,8 @@ Post-SPM, STPM and matriculation students in Malaysia, and their parents or scho
 | Week | Focus | Deliverable | Status |
 |------|-------|-------------|--------|
 | W1 | System map + project scope | README + docs | ✅ |
-| W2 | Data collection + field schema | Source table, 10 documents, JSON schema | ⬜ |
-| W3 | Ground-truth labelling | First 10 scholarships labelled | ⬜ |
+| W2 | Data collection + field schema | Source table (3 sources), JSON schema (5 fields) | ⬜ |
+| W3 | Ground-truth labelling | First 3 records labelled (target: 8 or more by W11) | ⬜ |
 | W4–W6 | Baseline | Download/cleaning pipeline, regex baseline | ⬜ |
 | W7–W10 | LLM extraction | JSON extraction pipeline, retrieval of relevant sections | ⬜ |
 | W11–W13 | Evaluation + interface | F1 per field, faithfulness, error analysis, comparison table UI | ⬜ |
