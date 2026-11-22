@@ -70,3 +70,51 @@ scholarshipscan/
 └── requirements.txt
 ```
  
+## Week 3: Data Engineering – Pipelines, Lineage, and Workflows
+
+This week focuses on developing the initial data preparation pipeline for ScholarshipScan using publicly available scholarship PDF documents.
+
+### Selected Data Sources
+
+Three scholarship documents were selected:
+- Malaysia International Scholarship (MIS) 2026
+- Malaysian Technical Cooperation Programme (MTCP) Scholarship 2026
+- MyBrainSc Scholarship FAQ 2026
+
+### Data Processing Workflow
+
+The pipeline consists of the following stages:
+
+1. **Source:** Collect scholarship PDF documents.
+2. **Ingest:** Load the PDF files into the project.
+3. **Inspect:** Check page counts and extracted text availability.
+4. **Prepare / Transform:** Extract text using PyPDF, clean whitespace, and apply paragraph-aware chunking with a maximum chunk size of 500 characters.
+5. **Validate Output:** Verify that the prepared JSONL files are not empty and that chunk sizes meet the configured limit.
+6. **Record Lineage:** Generate SHA-256 fingerprints and pipeline manifests to track source files, processing configurations, and outputs.
+
+### Project Structure
+
+```text
+week3_project/
+├── data/
+│   ├── raw/
+│   ├── processed/
+│   │   ├── prepared_text.jsonl
+│   │   └── chunking_comparison/
+│   ├── week3_manifest.json
+│   └── pipeline_v1/
+│       ├── documents_mis/
+│       ├── documents_mtcp/
+│       └── documents_mybrain/
+```
+
+### Pipeline Outputs
+
+- Extracted and prepared scholarship text in JSONL format.
+- Fixed-size and paragraph-aware chunking comparison.
+- Data lineage manifest.
+- Individual pipeline manifests for each scholarship document.
+
+### Limitations
+
+The current pipeline focuses on PDF text extraction. Complex tables, multi-column layouts, and scanned documents may require additional processing or OCR. Source version and access rights also require verification.
