@@ -1,0 +1,41 @@
+{
+  "pipeline_version": "week3-v1",
+  "generated_at_utc": "2026-11-22T13:58:20.664366+00:00",
+  "data_type": "documents_mtcp",
+  "configuration": {
+    "chunk_size": 500,
+    "method": "paragraph-aware"
+  },
+  "processing_method": "paragraph-aware text chunks of 500 characters",
+  "sources": [
+    {
+      "path": "/content/week3_project/data/raw/mtcp.pdf",
+      "sha256": "a05ef23830fa2944065c9a951dc03b198e5c0a7acf4c08549d396a69813507e1"
+    }
+  ],
+  "outputs": [
+    "/content/week3_project/data/pipeline_v1/documents_mtcp/prepared_text.jsonl"
+  ],
+  "source_output_mapping": [
+    {
+      "source": "/content/week3_project/data/raw/mtcp.pdf",
+      "output": "/content/week3_project/data/pipeline_v1/documents_mtcp/prepared_text.jsonl"
+    }
+  ],
+  "inspection": {
+    "source": "mtcp.pdf",
+    "pages": 4,
+    "characters": 7462
+  },
+  "validation": {
+    "output_count": 1,
+    "output_sha256": [
+      "163a1fd6c45f22d9679e9bfdb5a198407687146414a5f657ac3c6179c8f83cbb"
+    ],
+    "output_bytes": [
+      8295
+    ]
+  },
+  "source_version": "Not verified",
+  "access_rights": "Not verified"
+}
