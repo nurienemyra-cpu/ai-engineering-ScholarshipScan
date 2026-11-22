@@ -3,7 +3,7 @@
 **Course:** AI Engineering, Topic 1 Lab
  
 ## 1. Purpose
-ScholarshipScan reads public scholarship documents and turns their eligibility criteria, deadlines, values and required documents into a structured, source-linked comparison table for students.
+ScholarshipScan reads public scholarship documents and turns their eligibility criteria, deadlines and required documents into a structured, source-linked comparison table for students.
  
 ## 2. Target Users
 Post-SPM, STPM and matriculation students in Malaysia, and their parents or school counsellors, who need to compare scholarships without reading many long documents.
@@ -13,8 +13,8 @@ Post-SPM, STPM and matriculation students in Malaysia, and their parents or scho
 - Criteria are often conditional ("and", "or", "except"), and one paragraph can hold several rules.
 - Keyword search or fixed rules will miss many phrasings. An LLM with a fixed output schema can handle the variation, and the result can be measured against a baseline.
 ## 4. In Scope
-- Collect 20 to 30 public scholarship documents (PDF or web pages) from at least 2 to 3 sources.
-- Extract these fields into JSON: scholarship name, sponsor, eligibility (citizenship, age, minimum results, field of study), deadline, value or benefits, required documents, source URL, date checked.
+- Collect public scholarship documents (PDF or web pages) from 3 sources, giving at least 8 scholarship records (one document can contain several schemes). Start with 3 records for the baseline and grow to 8 or more before evaluation.
+- Extract five core fields into JSON: citizenship, age limit, minimum results, deadline, required documents. Each record also stores scholarship name, sponsor, source URL and date checked as metadata.
 - Support English and Malay text.
 - Show a comparison table with a link to the source for every field.
 - Evaluate against a manually labelled ground truth and a regex baseline.
@@ -45,7 +45,7 @@ Example:
 Each document is recorded with its URL, download date and intake year. Where redistribution is unclear, only URLs and download scripts are stored in the repository.
  
 ## 8. Evaluation Plan (preview, details in Topic 2)
-- Ground truth: 30 to 50 scholarships labelled manually (6 to 8 fields each).
+- Ground truth: at least 8 scholarship records labelled manually (5 fields each, about 40 data points). Target of 15 if time allows.
 - Metrics: precision, recall and F1 per field; faithfulness rate (extracted value appears in the source text).
 - Baseline: regex and keyword rules; compare against the LLM approach.
 - Error analysis: identify which fields and phrasings fail most often.
@@ -74,4 +74,3 @@ Each document is recorded with its URL, download date and intake year. Where red
 | W7 to W10 | LLM extraction and retrieval |
 | W11 to W13 | Evaluation and comparison table interface |
 | W14 | Report and demo |
-
