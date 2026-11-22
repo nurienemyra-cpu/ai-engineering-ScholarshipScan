@@ -1,5 +1,5 @@
 # ScholarshipScan: Automatic Extraction and Comparison of Eligibility Criteria from Malaysian Scholarship Documents
-AI Engineering — Topic 1 
+AI Engineering - Topic 1 
  
 > ScholarshipScan extracts eligibility criteria, deadlines and required documents from public scholarship documents into a structured, source-linked comparison table, for Malaysian students who are choosing where to apply.
  
