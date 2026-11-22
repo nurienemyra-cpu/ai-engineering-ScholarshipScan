@@ -1,0 +1,148 @@
+# Architecture Decisions: ScholarshipScan
+AI Engineering, Topic 2
+
+> **Note on IDs and thresholds:** The requirement IDs (FR, NFR, RAI) and the evaluation thresholds in this document are a working draft based on the Week 1 project scope. Replace them with the IDs and thresholds from your own Part A and Part B if they differ, and keep the diagram labels in sync.
+
+## Requirements used in this document
+
+| ID | Requirement |
+|---|---|
+| FR1 | Public scholarship documents (PDF or web pages) can be added, with title, sponsor, URL, intake year and download date recorded. |
+| FR2 | The five core fields (citizenship, age limit, minimum results, deadline, required documents) are extracted consistently with the selected documents. |
+| FR3 | Every extracted field shows a source reference and the supporting passage. |
+| FR4 | The output is a clear, comparable table across selected scholarships. |
+| FR5 | Extracted values are normalised into the fixed JSON schema (for example dates and numbers). |
+| FR6 | When a field is not stated in the document, the system returns "not stated" instead of guessing. |
+| FR7 | Out-of-scope requests (eligibility decisions, application advice, scholarships not in the collection) are refused and redirected. |
+| NFR1 | Latency stays within the threshold set in Part B. |
+| NFR2 | Field-level accuracy (precision, recall, F1) meets the target and beats the regex baseline. |
+| NFR3 | The right passages are retrieved for each field. |
+| NFR4 | Cost per document stays within the budget set in Part B. |
+| NFR5 | A new document can be added without rebuilding unrelated parts. |
+| NFR6 | Output is concise and readable for students. |
+| RAI1 | Groundedness: every value is supported by a retrieved passage. |
+| RAI2 | Verifiable source references for each value. |
+| RAI3 | The system abstains when evidence is insufficient. |
+| RAI4 | Out-of-scope requests are refused. |
+| RAI5 | Students are told to verify with the sponsor's original document. |
+| RAI6 | Document version and provenance are recorded. |
+| RAI7 | Personal identifiers are not stored beyond the session. |
+
+---
+
+## Step C1: Simplest Architecture
+
+```
+User Query → AI Application → Language Model Service → Response
+```
+
+**Main user interaction:** A student names or selects scholarships to compare and reads a table of their eligibility criteria and deadlines.
+
+**AI capability needed:** A language model service that reads scholarship information and produces the structured criteria (citizenship, age limit, minimum results, deadline, required documents).
+
+**Can this simple architecture satisfy the Part A and Part B requirements?**
+
+| Requirement / Criterion | Supported by simple architecture? | Why |
+|---|---|---|
+| FR4 / NFR6: Clear, comparable output | Yes | The model can format criteria as a plain table. |
+| NFR1: Latency | Yes | One model call per request. |
+| FR5: Normalised JSON schema | Partly | A prompt can ask for a format, but the output is not validated and can be malformed or inconsistent. |
+| FR2 / NFR2: Values consistent with the selected documents | No | The model has no access to the actual documents and answers from general or outdated knowledge. |
+| FR3 / RAI2: Verifiable source references | No | There is no document to cite, and the model may invent a source or a deadline. |
+| FR6 / RAI3: Say "not stated" when the document does not contain a field | No | Nothing tells the model whether the document contains the answer, so it tends to fill gaps with plausible values. |
+| FR7 / RAI4: Refuse out-of-scope requests | Partly | An instruction can ask the model to refuse, but this is not reliable or testable on its own. |
+| FR1 / NFR5 / RAI6: Add documents and record versions | No | There is no document handling or document register. |
+| RAI1: Groundedness | No | Values cannot be tied to retrieved evidence. |
+| NFR2 to NFR4 / RAI1 to RAI3: Evaluation evidence | No | There is nowhere to capture documents, passages, outputs, latency and cost. |
+
+**Conclusion:** The simple flow supports clear formatting and low latency, but not grounding, source tracing, abstention, reliable scope control, document management, output validation, or evaluation. Components are added in C2 to cover these gaps.
+
+---
+
+## Step C2: Architecture Needs from Requirements
+
+| Requirement ID | What does the requirement need? | Architecture Response |
+|---|---|---|
+| FR1 / NFR5 | Scholarship PDFs and web pages must be added and become searchable without rebuilding unrelated parts. | **Document Processing** component that downloads, converts and cleans documents, separate from answering. |
+| FR1 / RAI6 | Each document's title, sponsor, URL, intake year and download date must be recorded. | Document metadata held alongside the indexed content in the **Knowledge Source**. |
+| FR2 / NFR2 / NFR3 | Extracted values must come from the selected documents, and the right passages must be found for each field. | **Knowledge Source** plus **Knowledge Retrieval** that returns the relevant passages for each field. |
+| FR3 / RAI2 | Each value must include a reference and the supporting passage. | Passage and document metadata carried through to the response, so every cell can be traced to its source. |
+| FR5 / RAI1 | Values must fit the fixed JSON schema and be supported by the passages. | **Output Validation** after extraction: a schema check plus a faithfulness check that each value appears in its source passage. |
+| FR6 / RAI3 | The system must say "not stated" when the document does not contain a field. | **Evidence Sufficiency Check** between retrieval and extraction, with a "not stated" path. |
+| FR7 / RAI4 | Out-of-scope requests must be refused and redirected. | **Scope / Safety Control** placed before retrieval and extraction. |
+| FR2 / FR4 / NFR6 | The table must stay consistent with the sources and remain readable. | **Language Model Service** that extracts only from the retrieved passages provided to it, with the result shown as a comparison table. |
+| RAI5 | Students must be told to verify against the original document. | Response format in the **Application Interface** includes a verification notice, source link and date checked. |
+| NFR1 / NFR4 | Latency and cost must stay within thresholds. | **Evaluation Point** that records latency and usage; a small number of components on the main path. |
+| NFR2 | Accuracy must be measured against a baseline. | **Evaluation Point** holds the ground-truth labels and the regex baseline results for field-level precision, recall and F1. |
+| RAI7 | Personal identifiers must not be stored beyond the session. | Evaluation Point limited to non-personal data; no persistent user profile. |
+
+---
+
+## Step C3: V1 Conceptual Architecture
+
+![ScholarshipScan V1 architecture: simple flow (top) and flow with requirement-driven components (bottom)](v1_architecture_diagram.png)
+
+*Figure 1. Panel 1 shows the simplest architecture and its limitation. Panel 2 adds only the components identified in C2. The editable source is `v1_architecture_diagram.drawio`.*
+
+### Component Summary
+
+| Component | Function | Justified by |
+|---|---|---|
+| Student | Selects scholarships to compare and reads the comparison table. | Target users |
+| Application Interface | Accepts the student's selection or request; displays the table, source references and the verification notice. | FR4, RAI5 |
+| Scope / Safety Control | Checks whether a request is in scope; refuses and redirects if not (for example "am I eligible?" or "which one should I pick?"). | FR7, RAI4 |
+| Knowledge Retrieval | Finds passages in the selected documents that are relevant to each field. | FR2, NFR3 |
+| Knowledge Source | Holds the indexed scholarship text and document metadata (sponsor, URL, intake year, download date). | FR1, FR3, RAI6 |
+| Evidence Sufficiency Check | Decides whether the retrieved passages are enough to extract a field; returns "not stated" if not. | FR6, RAI3 |
+| Language Model Service | Extracts field values from the retrieved passages and formats them for the table. | FR2, FR4, RAI1 |
+| Output Validation | Checks the output against the JSON schema and checks that each value appears in its source passage. | FR5, RAI1 |
+| Response / Output | Comparison table with source references and verification notice, or a refusal or "not stated" message. | FR3, FR6, FR7, RAI2, RAI5 |
+| Document Sources | Approved public scholarship PDFs and web pages. | FR1, RAI6 |
+| Document Processing | Prepares new documents so they can be searched (offline). | FR1, NFR5 |
+| Evaluation Point | Records documents, retrieved passages, outputs, latency and cost for evaluation. | NFR1 to NFR4, RAI1 to RAI3, RAI7 |
+
+*Components are labelled by function. Specific models, retrieval methods, databases and frameworks will be selected in later topics.*
+
+---
+
+## Step C4: Architecture Decision Records (ADR)
+
+| Decision | Requirement / Constraint | Alternatives Considered | Selected Option | Trade-off Accepted |
+|---|---|---|---|---|
+| **ADR1:** Include knowledge access from the selected documents | FR2, FR3, NFR2, RAI1: values must be grounded in the selected documents and traceable to sources. | (a) Language model only; (b) pass the whole document to the model on every request; (c) retrieve relevant passages first. | Retrieve relevant passages from a Knowledge Source before extraction. | More system complexity, and extraction quality now depends on retrieval quality (a criterion split across sections may be missed). In return, values are better grounded and traceable to a specific passage. Passing whole documents is possible for short files but gives coarse source tracing and does not scale to long handbooks. |
+| **ADR2:** Include an explicit evidence sufficiency check | FR6, RAI3, RAI1: the system must not fill in missing fields with guessed values. | (a) Prompt instruction only; (b) explicit check before extraction. | Explicit Evidence Sufficiency Check with a "not stated" path. | Some fields that are actually in the document will be wrongly shown as "not stated" (false abstentions), and there is a little extra processing. In return, fewer invented deadlines or criteria. |
+| **ADR3:** Include an explicit scope control | FR7, RAI4: eligibility decisions, application advice and out-of-collection requests must be refused. | (a) Instruction to the model only; (b) explicit scope-control component. | Explicit Scope / Safety Control before retrieval. | Possible false refusals of borderline comparison requests, and added latency (NFR1). In return, a testable, repeatable control. |
+| **ADR4:** Keep document processing separate from answering | FR1, NFR5, RAI6: new documents must be added without rebuilding the application, with versions recorded. | (a) Process documents at request time; (b) separate offline processing with a document register. | Separate Document Processing step feeding the Knowledge Source. | Documents must be prepared before use, and PDF parsing may handle tables or multi-column layouts poorly. In return, faster responses and easier maintenance. |
+| **ADR5:** Include an Evaluation Point from V1 | NFR1 to NFR4, RAI1 to RAI3, RAI7: evidence is needed to show thresholds are met. | (a) Add evaluation later; (b) capture evaluation data from the start. | Evaluation Point that records non-personal interaction data. | Extra logging effort now, and care is needed to avoid storing personal data. In return, evaluation evidence is available from the first prototype. |
+| **ADR6:** Include an output validation step | FR5, RAI1: values must fit the fixed schema and be supported by the source passage. | (a) Trust the model's output; (b) prompt for JSON only; (c) explicit schema and faithfulness check. | Explicit Output Validation after the Language Model Service. | Some valid outputs may be rejected and need re-extraction, which adds processing and cost. In return, malformed or unsupported values are caught before they reach the student. |
+
+---
+
+## Initial Requirements Traceability Matrix
+
+> Thresholds below are draft targets. Replace them with the values from your Part B evaluation criteria.
+
+| Objective | Requirement | Evaluation Criterion | Architecture Element | Later Evidence |
+|---|---|---|---|---|
+| O1 | FR1, NFR5, RAI6 | Document addition time (< 15 min per document); metadata complete (100%) | Document Processing + Knowledge Source | Document-addition test and document register audit |
+| O1 | FR5 | Schema validity (≥ 95% of outputs valid against the schema) | Output Validation | Validation log over the evaluation set |
+| O1 | FR2, NFR3 | Retrieval relevance (hit rate @ 5 ≥ 85%) | Knowledge Retrieval + Knowledge Source | Retrieval test against labelled source locations |
+| O2 | NFR2 | Field-level accuracy (F1 ≥ 0.80 overall and higher than the regex baseline) | Whole extraction path | Comparison with the ground truth (≥ 8 records, 5 fields each) |
+| O2 | FR6, RAI3 | "Not stated" handling (≥ 90% correct; ≤ 15% false) | Evidence Sufficiency Check | Test on fields known to be absent, plus false "not stated" check |
+| O3 | RAI1 | Faithfulness (≥ 90% of extracted values appear in the supporting passage) | Retrieval + Language Model Service + Output Validation + Evaluation Point | Manual review of all extracted values (about 40 or more) |
+| O3 | FR3, RAI2 | Source citation and support (100% presence; ≥ 95% match) | Knowledge Source + Response format | Citation audit of the evaluation set |
+| O3 | FR4, NFR6 | Table clarity (mean ≥ 4.0 on a 5-point rubric) | Language Model Service + Application Interface | Ratings from 3 to 5 student testers |
+| O3 | FR7, RAI4 | Out-of-scope refusal (≥ 95%) | Scope / Safety Control | Results from a test of ≥ 20 out-of-scope requests |
+| O3 | NFR1 | Extraction latency (p90 < 60 s per document) | Evaluation Point | Latency log from the evaluation workload |
+| O3 | NFR4 | Inference cost (< US$0.05 per document) | Evaluation Point | Usage log from the evaluation workload |
+| O3 | RAI7 | No personal identifiers in logs (0 found) | Evaluation Point | Log audit |
+
+---
+
+## Reflection
+
+**Which architecture decision involved the most important trade-off? Which requirement drove the decision, and what trade-off did you accept?**
+
+ADR2, the explicit evidence sufficiency check, involved the most important trade-off. It was driven by RAI3 (abstain when evidence is insufficient) and supports RAI1 (groundedness), which I identified as the most important evaluation criterion. A system that always fills in every field will sometimes invent a deadline or a requirement, and a student may not notice before relying on it. The check lets ScholarshipScan say "not stated" instead, and the student can then open the source document to confirm.
+
+The trade-off I accepted is false abstentions. A stricter check reduces invented values but also marks fields as "not stated" when the document does contain them, which makes the table less complete and adds a little processing time. This is why RAI3 has two thresholds (≥ 90% correct "not stated" and ≤ 15% false "not stated"), and why the check's strictness will have to be tuned during evaluation rather than fixed now.
